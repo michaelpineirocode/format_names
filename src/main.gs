@@ -53,8 +53,45 @@ function sortMiddleName() { // going to try lazy computing
 }
 
 function sortApostrophe() {
-  SpreadsheetApp.getUi() // Or DocumentApp or FormApp.
-     .alert('You clicked the second menu item!');
+  var ui = SpreadsheetApp.getUi()
+  var response = ui.prompt("Sort by Apostrophe", "Find by name?", ui.ButtonSet.YES_NO_CANCEL)
+  var text = response.getResponseText()
+
+  if (response.getSelectedButton() == ui.Button.CANCEL) {
+    return
+  } 
+  
+  else { 
+      // gets the column number of where to search
+      const col_num = parseInt(ui.prompt("Column Number", "Enter the column to search", ui.ButtonSet.OK).getResponseText())
+      
+      const ss = SpreadsheetApp.getActiveSheet()
+      const lastrow = ss.getLastRow() // gets the last row indexed FROM ONE 1
+      let names = []
+      
+      if (response.getSelectedButton() == ui.Button.NO) {
+        for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
+          var content = ss.getRange(i, col_num).getValue()
+          let middlename = content.split("@")[0] // selects name prior to domain
+          if (middlename.includes("'")) { // tests if there is an apostrophe
+            names.push(content)
+          }
+        }
+        moveData(names)
+      }
+      
+      else {
+          for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
+            var content = ss.getRange(i, col_num).getValue()
+            let middlename = content.split("@")[0] // selects name prior to domain
+            let word_term = content.split("").splice(0, text.length).join("") // finds the corresponding letters to search in email
+            if (middlename.includes("'") && word_term == text) {  // if the search and the fact it has a middle name lines up, add it
+              names.push(content) // adds to a list
+        }
+      } 
+      moveData(names)
+    }
+  }
 }
 
 function moveData(names) {
@@ -65,7 +102,7 @@ function moveData(names) {
       }
       let response = ui.alert(
         "The following email address(es) have been found: " + names.join(", ") 
-        + "\nWould you like to create a new column? If not, you will append to existing an column.", 
+        + "\nSelect 'Yes' to create a new column? Select 'No' append to existing an column.", 
         ui.ButtonSet.YES_NO_CANCEL)
       
       if (response == ui.Button.CANCEL) {
@@ -81,11 +118,13 @@ function moveData(names) {
         }  
       }
       else { // appending
-        text = parseInt(ui.prompt("What column number would you like to append the names to?").getResponseText())
+        let text = parseInt(ui.prompt("What column number would you like to append the names to?").getResponseText())
         let last_row = findLastRow(text)
         for (i=last_row + 1; i <= names.length + last_row; i++) {
+          Logger.log(i)
+          Logger.log(text)
           let cell = ss.getRange(i, text)
-          cell.setValue(names[i-1])
+          cell.setValue(names[i-1-last_row])
         }  
       }
       }
