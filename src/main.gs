@@ -117,11 +117,12 @@ function sortMiddleandApostrophe() {
       let names = []
 
       if (response.getSelectedButton() == ui.Button.NO) { // DON'T search for name
-        for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
+        for (i=1; i <= lastrow + 1; i++) { // loops through every row and gets 
           let content = ss.getRange(i, col_num).getValue()
           let name = content.split("@")[0] // selects name prior to domain
           if (name.includes("'")) { 
             name = content.replace("'", "")
+            content = name
           }
 
           if(name.split("@")[0].split(".").length > 2) {
@@ -134,19 +135,21 @@ function sortMiddleandApostrophe() {
       }
       
       else {
-          for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
+          for (i=1; i <= lastrow + 1; i++) { // loops through every row and gets 
             let content = ss.getRange(i, col_num).getValue()
             let name = content.split("@")[0] // selects name prior to domain
             let word_term = content.split("").splice(0, text.length).join("") // finds the corresponding letters to search in email
             if (name.includes("'") && word_term == text) {
               name = content.replace("'", "")
+              content = name
           }   
             if (name.split("@")[0].split(".").length > 2 && word_term == text) { 
               let word_terms = name.split("@")[0].split(".")
               content = [word_terms[0] + "." + word_terms[2]].join("").replace(",", "") + "@" + content.split("@")[1]
         }
-      } 
-          moveData(names)
+        names.push(content)
+      }
+      moveData(names)
       }
     }
   }
