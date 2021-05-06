@@ -63,17 +63,46 @@ function moveData(names) {
         ui.alert("No names matching the criteria were found.")
         return
       }
-      response = ui.alert(
-          "The following email address(es) have been found: " + names.join(", ") + "\nWould you like to add to a new column?", 
-          ui.ButtonSet.YES_NO_CANCEL)
+      let response = ui.alert(
+        "The following email address(es) have been found: " + names.join(", ") 
+        + "\nWould you like to create a new column? If not, you will append to existing an column.", 
+        ui.ButtonSet.YES_NO_CANCEL)
       
-      if (response.getSelectedButton == ui.Button.CANCEL) {
+      if (response == ui.Button.CANCEL) {
         return
       }
-      else {
-
+      
+      const ss = SpreadsheetApp.getActiveSheet()
+      if (response == ui.Button.YES) { 
+        const finalColumn = ss.getLastColumn()
+        for (i=1; i <= names.length; i++) {
+          let cell = ss.getRange(i, finalColumn+1)
+          cell.setValue(names[i-1])
+        }  
       }
+      else { // appending
+        text = parseInt(ui.prompt("What column number would you like to append the names to?").getResponseText())
+        let last_row = findLastRow(text)
+        for (i=last_row + 1; i <= names.length + last_row; i++) {
+          let cell = ss.getRange(i, text)
+          cell.setValue(names[i-1])
+        }  
+      }
+      }
+
+function findLastRow(col) { // finds the last row in any given column, not the last one overall
+  ss = SpreadsheetApp.getActiveSheet()
+  let last_row = ss.getLastRow() // gets the last row so that we have some form of constraint
+  let content_row = 0 
+  for (i=1; i <= last_row; i++) { // loop through each item in the column
+    let cell = ss.getRange(i, col)
+    if (cell.getValue() != "") {
+      content_row = i // if the cell is not empty, update the index of the most recently filled cell
+    }
+  }
+  return content_row
 }
+
 /*
 This doesn't work right now because I am an imbecile who forgot that A1 notation can't simply be multiplied by 27
 function convertA1toNum(a1) {
