@@ -22,6 +22,7 @@ function sortMiddleName() { // going to try lazy computing
   else { 
       // gets the column number of where to search
       const col_num = parseInt(ui.prompt("Column Number", "Enter the column to search", ui.ButtonSet.OK).getResponseText())
+      
       const ss = SpreadsheetApp.getActiveSheet()
       const lastrow = ss.getLastRow() // gets the last row indexed FROM ONE 1
       let names = []
@@ -73,9 +74,20 @@ function moveData(names) {
 
       }
 }
-
-
-
+/*
+This doesn't work right now because I am an imbecile who forgot that A1 notation can't simply be multiplied by 27
+function convertA1toNum(a1) {
+  let alphabet = "abcdefghijklmnopqrstuvwxyz".split("") // list of all letters in the alphabet!
+  let len = a1.length // length of the a1 notation (A, AA, AAA, AAAA)
+  let col_num = 0
+  if (len > 1) { // if the length is greater than 1, multiply out by 26
+    col_num = (len - 1) * 26
+  }
+  let last_letter = a1.split("").splice(-1, 1)
+  col_num += alphabet.indexOf(last_letter) + 1
+  return col_num
+}
+*/
 
 
 
