@@ -8,7 +8,10 @@ function onOpen() {
         //  .addItem('Remove Middle Name', 'sortMiddleName')
         //  .addItem("Remove Apostrophe", "sortApostrophe")
           .addItem("Remove Middle Name and Apostrophe", "sortMiddleandApostrophe"))
-      .addItem("Convert Email to F&L Names", "removeEmailDomain")
+      .addSubMenu(ui.createMenu("Formatting")
+        .addItem("Convert Email to F&L Names", "removeEmailDomain")
+        .addItem("Convert to Uppercase", "convertUpper")
+        .addItem("Convert to Lowercase", "convertLower"))
     //  .addItem("Filter Out From List", "filterOut")
       .addToUi();
 }
@@ -157,7 +160,7 @@ function sortMiddleandApostrophe() {
 
 function removeEmailDomain() {
   var ui = SpreadsheetApp.getUi()
-  var response = ui.prompt("Concert emails to first and last name", "Find by name?", ui.ButtonSet.YES_NO_CANCEL)
+  var response = ui.prompt("Convert emails to first and last name", "Find by name?", ui.ButtonSet.YES_NO_CANCEL)
   var text = response.getResponseText()
 
   if (response.getSelectedButton() == ui.Button.CANCEL) {
@@ -251,6 +254,29 @@ function moveData(names) {
         }  
         }
       }
+
+function convertUpper() {
+  ui = SpreadsheetApp.getUi()
+  response = parseInt(ui.prompt("What column needs to be uppercased?").getResponseText())
+  const ss = SpreadsheetApp.getActiveSheet()
+  const lastRow = ss.getLastRow()
+  for(i=1; i <= lastRow; i++) {
+    let cell = ss.getRange(i, response)
+    cell.setValue(cell.getValue().toUpperCase())
+  }
+}
+
+function convertLower() {
+  ui = SpreadsheetApp.getUi()
+  response = parseInt(ui.prompt("What column needs to be lowercased?").getResponseText())
+  const ss = SpreadsheetApp.getActiveSheet()
+  const lastRow = ss.getLastRow()
+  for(i=1; i <= lastRow; i++) {
+    let cell = ss.getRange(i, response)
+    cell.setValue(cell.getValue().toLowerCase())
+  }
+
+}
 
 function findLastRow(col) { // finds the last row in any given column, not the last one overall
   ss = SpreadsheetApp.getActiveSheet()
