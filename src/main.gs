@@ -98,8 +98,67 @@ function sortApostrophe() {
 }
 
 function sortMiddleandApostrophe() {
+  var ui = SpreadsheetApp.getUi()
+  var response = ui.prompt("Sort by Apostrophe", "Find by name?", ui.ButtonSet.YES_NO_CANCEL)
+  var text = response.getResponseText()
+
+  if (response.getSelectedButton() == ui.Button.CANCEL) {
+    return
+  } 
   
-}
+  else { 
+      // gets the column number of where to search
+      const col_num = parseInt(ui.prompt("Column Number", "Enter the column to search", ui.ButtonSet.OK).getResponseText())
+      
+      const ss = SpreadsheetApp.getActiveSheet()
+      const lastrow = ss.getLastRow() // gets the last row indexed FROM ONE 1
+      let names = []
+
+      if (response.getSelectedButton() == ui.Button.NO) {
+        for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
+          var content = ss.getRange(i, col_num).getValue()
+          let middlename = content.split("@")[0] // selects name prior to domain
+          if (middlename.includes("'") || middlename.split("@")[0].split(".").length > 2) { 
+            names.push(content) // will push the raw name
+          }
+        }
+        for (i=0; i < names.length; i++) {
+          if (names[i].includes("'")) {
+            names[i] = names[i].replace("'", "")
+          }
+          word_terms = names[i].split("@")[0].split(".")
+          if (word_terms.length > 2) {
+            names[i] = [word_terms[0] + "." + word_terms[2]].join("").replace(",", "") + "@" + names[i].split("@")[1]
+          }
+        }
+          moveData(names)
+      }
+      
+      else {
+          for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
+            var content = ss.getRange(i, col_num).getValue()
+            let middlename = content.split("@")[0] // selects name prior to domain
+            let word_term = content.split("").splice(0, text.length).join("") // finds the corresponding letters to search in email
+            if (
+              (middlename.includes("'") && word_term == text) || 
+              (middlename.split("@")[0].split(".").length > 2 && word_term == text)) { 
+              names.push(content)
+        }
+      } 
+      for (i=0; i < names.length; i++) {
+          if (names[i].includes("'")) {
+            names[i].replace("'", "")
+          }
+          if (names[i].split("@")[0].split(".") > 2) {
+            word_terms = names[i].split("@")[0].split(".")
+            names[i] = [word_terms[0] + word_terms[2]].join("").replace(",", "")
+          }
+        }
+          moveData(names)
+      }
+    }
+  }
+
 
 
 function moveData(names) {
