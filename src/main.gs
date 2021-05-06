@@ -6,7 +6,8 @@ function onOpen() {
   ui.createMenu(MENU_NAME) 
       .addSubMenu(ui.createMenu('Sort')
           .addItem('Remove Middle Name', 'sortMiddleName')
-          .addItem("Remove Apostrophe", "sortApostrophe"))
+          .addItem("Remove Apostrophe", "sortApostrophe")
+          .addItem("Remove Middle Name and Apostrophe", "sortMiddleandApostrophe"))
       .addToUi();
 }
 
@@ -96,6 +97,11 @@ function sortApostrophe() {
   }
 }
 
+function sortMiddleandApostrophe() {
+  
+}
+
+
 function moveData(names) {
   ui = SpreadsheetApp.getUi()
       if (names.length == 0) {
@@ -104,7 +110,7 @@ function moveData(names) {
       }
       let response = ui.alert(
         "The following email address(es) have been found and edited: " + names.join(", ") 
-        + "\nSelect 'Yes' to create a new column? Select 'No' append to a specific column.", 
+        + "\nSelect 'Yes' to create a new column. Select 'No' for more options", 
         ui.ButtonSet.YES_NO_CANCEL)
       
       if (response == ui.Button.CANCEL) {
@@ -112,24 +118,40 @@ function moveData(names) {
       }
       
       const ss = SpreadsheetApp.getActiveSheet()
-      if (response == ui.Button.YES) { 
+      if (response == ui.Button.YES) {  // create a new column
         const finalColumn = ss.getLastColumn()
         for (i=1; i <= names.length; i++) {
           let cell = ss.getRange(i, finalColumn+1)
           cell.setValue(names[i-1])
         }  
       }
-      else { // appending
-        let text = parseInt(ui.prompt("What column number would you like to append the names to?").getResponseText())
-        let last_row = findLastRow(text)
-        for (i=last_row + 1; i <= names.length + last_row; i++) {
-          Logger.log(i)
-          Logger.log(text)
-          let cell = ss.getRange(i, text)
-          cell.setValue(names[i-1-last_row])
+      else { // appending or overriding
+        let response = ui.alert("Select 'Yes' to append a row. Select 'No' to override", ui.ButtonSet.YES_NO_CANCEL)
+          if (response == ui.Button.CANCEL) {
+            return;
+          }
+          
+          if (response == ui.Button.YES) { // append
+          let text = parseInt(ui.prompt("What column number would you like to append the names to?").getResponseText())
+          let last_row = findLastRow(text)
+          for (i=last_row + 1; i <= names.length + last_row; i++) {
+            let cell = ss.getRange(i, text)
+            cell.setValue(names[i-1-last_row])
+          }
         }  
+        else { // if they are overriding
+          let text = parseInt(ui.prompt("What column number would you like to override?").getResponseText())
+          let last_row = ss.getLastRow()
+          for (i=1; i <= last_row; i++) {
+            Logger.log(i)
+            Logger.log(text)
+            let cell = ss.getRange(i, text)
+            cell.setValue(names[i-1])
+          }
+        }  
+        }
       }
-      }
+      
 
 function findLastRow(col) { // finds the last row in any given column, not the last one overall
   ss = SpreadsheetApp.getActiveSheet()
