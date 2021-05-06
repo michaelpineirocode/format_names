@@ -8,6 +8,7 @@ function onOpen() {
           .addItem('Remove Middle Name', 'sortMiddleName')
           .addItem("Remove Apostrophe", "sortApostrophe")
           .addItem("Remove Middle Name and Apostrophe", "sortMiddleandApostrophe"))
+      .addItem("Convert Email to F&L Names", "removeEmailDomain")
       .addToUi();
 }
 
@@ -99,7 +100,7 @@ function sortApostrophe() {
 
 function sortMiddleandApostrophe() {
   var ui = SpreadsheetApp.getUi()
-  var response = ui.prompt("Sort by Apostrophe", "Find by name?", ui.ButtonSet.YES_NO_CANCEL)
+  var response = ui.prompt("Sort by Apostrophe and Middle Name", "Find by name?", ui.ButtonSet.YES_NO_CANCEL)
   var text = response.getResponseText()
 
   if (response.getSelectedButton() == ui.Button.CANCEL) {
@@ -160,6 +161,47 @@ function sortMiddleandApostrophe() {
   }
 
 
+function removeEmailDomain() {
+  var ui = SpreadsheetApp.getUi()
+  var response = ui.prompt("Concert emails to first and last name", "Find by name?", ui.ButtonSet.YES_NO_CANCEL)
+  var text = response.getResponseText()
+
+  if (response.getSelectedButton() == ui.Button.CANCEL) {
+    return
+  } 
+  
+  else { 
+      // gets the column number of where to search
+      const col_num = parseInt(ui.prompt("Column Number", "Enter the column to search", ui.ButtonSet.OK).getResponseText())
+      
+      const ss = SpreadsheetApp.getActiveSheet()
+      const lastrow = ss.getLastRow() // gets the last row indexed FROM ONE 1
+      let names = []
+      
+      if (response.getSelectedButton() == ui.Button.NO) {
+        for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
+          var content = ss.getRange(i, col_num).getValue()
+          let name = content.split("@")[0].split(".").join(" ").replace(",", "") // creates array of every name prior to domain name
+          names.push(name)
+          }
+        moveData(names)
+        }
+      
+      else {
+          for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
+            var content = ss.getRange(i, col_num).getValue()
+            let middlename = content.split("@")[0].split(".") // creates array of every name prior to domain name
+            
+            let word_term = content.split("").splice(0, text.length).join("") // finds the corresponding letters to search in email
+            if (word_term == text) {  // if the search and the fact it has a middle name lines up, add it
+              let name = content.split("@")[0].split(".").join(" ").replace(",", "") // creates array of every name prior to domain name
+              names.push(name)
+        }
+      } 
+      moveData(names)
+    }
+  }
+}
 
 function moveData(names) {
   ui = SpreadsheetApp.getUi()
@@ -168,7 +210,7 @@ function moveData(names) {
         return
       }
       let response = ui.alert(
-        "The following email address(es) have been found and edited: " + names.join(", ") 
+        "The following cell(s) have been found and edited: " + names.join(", ") 
         + "\nSelect 'Yes' to create a new column. Select 'No' for more options", 
         ui.ButtonSet.YES_NO_CANCEL)
       
@@ -210,7 +252,6 @@ function moveData(names) {
         }  
         }
       }
-      
 
 function findLastRow(col) { // finds the last row in any given column, not the last one overall
   ss = SpreadsheetApp.getActiveSheet()
@@ -239,13 +280,3 @@ function convertA1toNum(a1) {
   return col_num
 }
 */
-
-
-
-
-
-
-
-
-
-
