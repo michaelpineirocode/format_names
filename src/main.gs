@@ -5,8 +5,8 @@ function onOpen() {
   // Or DocumentApp or FormApp.
   ui.createMenu(MENU_NAME) 
       .addSubMenu(ui.createMenu('Sort')
-          .addItem('Middle Name', 'sortMiddleName')
-          .addItem("Apostrophe", "sortApostrophe"))
+          .addItem('Remove Middle Name', 'sortMiddleName')
+          .addItem("Remove Apostrophe", "sortApostrophe"))
       .addToUi();
 }
 
@@ -32,7 +32,8 @@ function sortMiddleName() { // going to try lazy computing
           var content = ss.getRange(i, col_num).getValue()
           let middlename = content.split("@")[0].split(".") // creates array of every name prior to domain name
           if (middlename.length > 2) { // tests if there are more than two terms
-            names.push(content)
+              name = [middlename[0], middlename[2]].join().replace(",", ".")
+              names.push(name + "@" + content.split("@")[1]) // adds to a list
           }
         }
         moveData(names)
@@ -44,7 +45,8 @@ function sortMiddleName() { // going to try lazy computing
             let middlename = content.split("@")[0].split(".") // creates array of every name prior to domain name
             let word_term = content.split("").splice(0, text.length).join("") // finds the corresponding letters to search in email
             if (middlename.length > 2 && word_term == text) {  // if the search and the fact it has a middle name lines up, add it
-              names.push(content) // adds to a list
+              name = [middlename[0], middlename[2]].join().replace(",", ".")
+              names.push(name + "@" +content.split("@")[1]) // adds to a list
         }
       } 
       moveData(names)
@@ -74,7 +76,7 @@ function sortApostrophe() {
           var content = ss.getRange(i, col_num).getValue()
           let middlename = content.split("@")[0] // selects name prior to domain
           if (middlename.includes("'")) { // tests if there is an apostrophe
-            names.push(content)
+            names.push(content.replace("'", ""))
           }
         }
         moveData(names)
@@ -86,7 +88,7 @@ function sortApostrophe() {
             let middlename = content.split("@")[0] // selects name prior to domain
             let word_term = content.split("").splice(0, text.length).join("") // finds the corresponding letters to search in email
             if (middlename.includes("'") && word_term == text) {  // if the search and the fact it has a middle name lines up, add it
-              names.push(content) // adds to a list
+              names.push(content.replace("'", ""))
         }
       } 
       moveData(names)
@@ -101,8 +103,8 @@ function moveData(names) {
         return
       }
       let response = ui.alert(
-        "The following email address(es) have been found: " + names.join(", ") 
-        + "\nSelect 'Yes' to create a new column? Select 'No' append to existing an column.", 
+        "The following email address(es) have been found and edited: " + names.join(", ") 
+        + "\nSelect 'Yes' to create a new column? Select 'No' append to a specific column.", 
         ui.ButtonSet.YES_NO_CANCEL)
       
       if (response == ui.Button.CANCEL) {
