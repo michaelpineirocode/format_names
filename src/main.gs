@@ -4,11 +4,12 @@ function onOpen() {
   var ui = SpreadsheetApp.getUi();
   // Or DocumentApp or FormApp.
   ui.createMenu(MENU_NAME) 
-      .addSubMenu(ui.createMenu('Sort')
-          .addItem('Remove Middle Name', 'sortMiddleName')
-          .addItem("Remove Apostrophe", "sortApostrophe")
+      .addSubMenu(ui.createMenu('Remove')
+        //  .addItem('Remove Middle Name', 'sortMiddleName')
+        //  .addItem("Remove Apostrophe", "sortApostrophe")
           .addItem("Remove Middle Name and Apostrophe", "sortMiddleandApostrophe"))
       .addItem("Convert Email to F&L Names", "removeEmailDomain")
+    //  .addItem("Filter Out From List", "filterOut")
       .addToUi();
 }
 
@@ -115,46 +116,36 @@ function sortMiddleandApostrophe() {
       const lastrow = ss.getLastRow() // gets the last row indexed FROM ONE 1
       let names = []
 
-      if (response.getSelectedButton() == ui.Button.NO) {
+      if (response.getSelectedButton() == ui.Button.NO) { // DON'T search for name
         for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
-          var content = ss.getRange(i, col_num).getValue()
-          let middlename = content.split("@")[0] // selects name prior to domain
-          if (middlename.includes("'") || middlename.split("@")[0].split(".").length > 2) { 
-            names.push(content) // will push the raw name
+          let content = ss.getRange(i, col_num).getValue()
+          let name = content.split("@")[0] // selects name prior to domain
+          if (name.includes("'")) { 
+            name = content.replace("'", "")
           }
-        }
-        for (i=0; i < names.length; i++) {
-          if (names[i].includes("'")) {
-            names[i] = names[i].replace("'", "")
+
+          if(name.split("@")[0].split(".").length > 2) {
+            let word_terms = name.split("@")[0].split(".")
+            content = [word_terms[0] + "." + word_terms[2]].join("").replace(",", "") + "@" + content.split("@")[1]
           }
-          word_terms = names[i].split("@")[0].split(".")
-          if (word_terms.length > 2) {
-            names[i] = [word_terms[0] + "." + word_terms[2]].join("").replace(",", "") + "@" + names[i].split("@")[1]
-          }
+          names.push(content) // will push the raw name
         }
           moveData(names)
       }
       
       else {
           for (i=1; i < lastrow + 1; i++) { // loops through every row and gets 
-            var content = ss.getRange(i, col_num).getValue()
-            let middlename = content.split("@")[0] // selects name prior to domain
+            let content = ss.getRange(i, col_num).getValue()
+            let name = content.split("@")[0] // selects name prior to domain
             let word_term = content.split("").splice(0, text.length).join("") // finds the corresponding letters to search in email
-            if (
-              (middlename.includes("'") && word_term == text) || 
-              (middlename.split("@")[0].split(".").length > 2 && word_term == text)) { 
-              names.push(content)
+            if (name.includes("'") && word_term == text) {
+              name = content.replace("'", "")
+          }   
+            if (name.split("@")[0].split(".").length > 2 && word_term == text) { 
+              let word_terms = name.split("@")[0].split(".")
+              content = [word_terms[0] + "." + word_terms[2]].join("").replace(",", "") + "@" + content.split("@")[1]
         }
       } 
-      for (i=0; i < names.length; i++) {
-          if (names[i].includes("'")) {
-            names[i].replace("'", "")
-          }
-          if (names[i].split("@")[0].split(".") > 2) {
-            word_terms = names[i].split("@")[0].split(".")
-            names[i] = [word_terms[0] + word_terms[2]].join("").replace(",", "")
-          }
-        }
           moveData(names)
       }
     }
@@ -202,6 +193,12 @@ function removeEmailDomain() {
     }
   }
 }
+function filterOut() { // this does not work yet, it does nothing
+  let ss = SpreadsheetApp.getActiveSheet()
+  let searchList = ui.prompt("Column Number", "What column needs to be filtered?").getResponseText()
+  let queue = ui.prompt("Column Number", "What column needs to be filtered out?")
+
+}
 
 function moveData(names) {
   ui = SpreadsheetApp.getUi()
@@ -210,8 +207,7 @@ function moveData(names) {
         return
       }
       let response = ui.alert(
-        "The following cell(s) have been found and edited: " + names.join(", ") 
-        + "\nSelect 'Yes' to create a new column. Select 'No' for more options", 
+        "The column has been sorted. \nSelect 'Yes' to create a new column. Select 'No' for more options", 
         ui.ButtonSet.YES_NO_CANCEL)
       
       if (response == ui.Button.CANCEL) {
@@ -227,7 +223,7 @@ function moveData(names) {
         }  
       }
       else { // appending or overriding
-        let response = ui.alert("Select 'Yes' to append a row. Select 'No' to override", ui.ButtonSet.YES_NO_CANCEL)
+        let response = ui.alert("Select 'Yes' to append a column. Select 'No' to override a column", ui.ButtonSet.YES_NO_CANCEL)
           if (response == ui.Button.CANCEL) {
             return;
           }
