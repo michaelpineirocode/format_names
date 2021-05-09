@@ -1,10 +1,15 @@
+// Put this script on the spreadsheet that directly has the form submit.
+
 const SHEETNAME = "Sheet1" // the name of the sheet that the email addresses are being moved to
 const FORMNAME = "Form Responses 1" // the name of the sheet with form responses
 const EMAILCOL = 2 // the column that the email address is on the FORM SUBMIT sheet
 const COL = 5 // the column where the names should be placed
 
+const FORMURL = "" // this is the URL to the Spreadsheet that has the formsubmit.
+const SHEETURL = "" // this is the URL to the Spreadsheet that has the sheet thats being changed.
+
 function onFormSubmit(){
-  let ss = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FORMNAME) // defines sheet
+  let ss = SpreadsheetApp.openByUrl(FORMURL).getSheetByName(FORMNAME) // defines sheet
   let last_row = ss.getLastRow() 
   let content = ss.getRange(last_row, EMAILCOL).getValue() // gets the most recent email
   content = parseEmails(content) // parses the email into a name
@@ -27,13 +32,13 @@ function parseEmails(content){
 }
 
 function placeContent(content) {
-  let ss = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEETNAME)
+  let ss = SpreadsheetApp.openByUrl(SHEETURL).getSheetByName(SHEETNAME)
   let last_row = findLastRow(COL) // find the last row in that column
   ss.getRange(last_row + 1, COL).setValue(content) // place the content in the next row of the column
 }
 
 function findLastRow(column){
-  let ss = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEETNAME)
+  let ss = SpreadsheetApp.openByUrl(SHEETURL).getSheetByName(SHEETNAME)
   let last_row = ss.getLastRow() // gets the sheets last row
   for (i=last_row; i > 0; i --) { // goes BACK from the SHEET's last row
     let cell = ss.getRange(i, column).getValue()
