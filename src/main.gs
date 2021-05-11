@@ -4,9 +4,10 @@ const SHEETNAME = "Sheet1" // the name of the sheet that the email addresses are
 const FORMNAME = "Form Responses 1" // the name of the sheet with form responses
 const EMAILCOL = 2 // the column that the email address is on the FORM SUBMIT sheet
 const COL = 5 // the column where the names should be placed
+const ROW_OFFSET = 0 // if data already exists, this will offset the current number of rows to start from new submissions.
 
-const FORMURL = "" // this is the URL to the Spreadsheet that has the formsubmit.
-const SHEETURL = "" // this is the URL to the Spreadsheet that has the sheet thats being changed.
+const FORMURL = "https://docs.google.com/spreadsheets/d/1NfKmjlbkBAZaU-Zj2ayOllZsGgaXyHIJLPn_bthzT_4/edit#gid=61627112" // this is the URL to the Spreadsheet that has the formsubmit.
+const SHEETURL = "https://docs.google.com/spreadsheets/d/1wlFzk55V28UVUjrIvp2lFeDCSYfL1Sv1izCcfch38fg/edit#gid=0" // this is the URL to the Spreadsheet that has the sheet thats being changed.
 
 function onFormSubmit(){
   let ss = SpreadsheetApp.openByUrl(FORMURL).getSheetByName(FORMNAME) // defines sheet
@@ -34,7 +35,7 @@ function parseEmails(content){
 function placeContent(content) {
   let ss = SpreadsheetApp.openByUrl(SHEETURL).getSheetByName(SHEETNAME)
   let last_row = findLastRow(COL) // find the last row in that column
-  ss.getRange(last_row + 1, COL).setValue(content) // place the content in the next row of the column
+  ss.getRange(last_row + 1 + ROW_OFFSET, COL).setValue(content) // place the content in the next row of the column
 }
 
 function findLastRow(column){
